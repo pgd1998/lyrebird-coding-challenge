@@ -8,9 +8,14 @@ const db = getDatabase();
 // D: understand the TS structure here
 export const createAppointment = (data: CreateAppointmentRequest): Appointment => { 
     const { clinicianId, patientId, start, end } = data;
+    const startDate = new Date(start);
+const endDate = new Date(end);
 
+if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+  throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
+}
     // Validate start < end
-  if (new Date(start) >= new Date(end)) {
+  if (startDate >= endDate) { 
     throw new Error('Start time must be before end time');
   }
 
