@@ -9,11 +9,13 @@ const db = getDatabase();
 export const createAppointment = (data: CreateAppointmentRequest): Appointment => { 
     const { clinicianId, patientId, start, end } = data;
     const startDate = new Date(start);
-const endDate = new Date(end);
+    const endDate = new Date(end);
 
-if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-  throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
-}
+    // Check if dates are valid and in correct ISO format
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || 
+        startDate.toISOString() !== start || endDate.toISOString() !== end) {
+        throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
+    }
     // Validate start < end
   if (startDate >= endDate) { 
     throw new Error('Start time must be before end time');
