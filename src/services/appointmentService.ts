@@ -12,14 +12,25 @@ export const createAppointment = (data: CreateAppointmentRequest): Appointment =
     const endDate = new Date(end);
 
     // Check if dates are valid and in correct ISO format
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || 
-        startDate.toISOString() !== start || endDate.toISOString() !== end) {
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
         throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
     }
+
+    // Validate that the input strings are in proper UTC format (end with Z)
+    if (!start.endsWith('Z') || !end.endsWith('Z')) {
+        throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
+    }
+
+    // Check if appointment is in the past (using UTC)
+    const now = new Date();
+    if (startDate <= now) {
+        throw new Error('Cannot book appointments in the past');
+    }
+
     // Validate start < end
-  if (startDate >= endDate) { 
-    throw new Error('Start time must be before end time');
-  }
+    if (startDate >= endDate) { 
+        throw new Error('Start time must be before end time');
+    }
 
   // Check for overlapping appointments using transaction for concurrency safety
   const result = db.transaction(() => {
@@ -99,7 +110,7 @@ export const getClinicianAppointments = (clinicianId: string, params: Appointmen
 
   // Default to upcoming appointments only
   if (!params.from) {
-    query += ` AND start_time >= datetime('now')`;
+    query += ` AND start_time >= datetime('now', 'utc')`;
   }
 
   query += ` ORDER BY start_time ASC`;
@@ -135,7 +146,7 @@ export const getAllAppointments = (params: AppointmentQueryParams = {}): Appoint
   
   // Default to upcoming appointments only
   if (!params.from) {
-    query += ` AND start_time >= datetime('now')`;
+    query += ` AND start_time >= datetime('now', 'utc')`;
   }
   
   query += ` ORDER BY start_time ASC`;
