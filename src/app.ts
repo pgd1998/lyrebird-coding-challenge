@@ -1,0 +1,41 @@
+import express, { Express } from 'express';
+import cors from 'cors';
+import { getDatabase } from './database.js';
+import appointmentRoutes from './controllers/appointmentController.js';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Initialize database
+const db = getDatabase();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    database: 'connected'
+  });
+});
+
+app.use('/', appointmentRoutes);
+
+
+app.listen(PORT, () => {
+  console.log(`Clinic API running on http://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+}).on('error', (err) => {
+  console.error('Server error:', err);
+});
+
+// Keep the process alive
+process.on('SIGINT', () => {
+  console.log('Shutting down gracefully...');
+  process.exit(0);
+});
+
+export default app;
