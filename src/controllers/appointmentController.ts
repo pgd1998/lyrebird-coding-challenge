@@ -4,7 +4,6 @@ import * as appointmentService from '../services/appointmentService.js';
 
 const router = Router();
 
-// TODO: cant create appointment to the past. this is not implemented to check and say cant create to the past
 router.post('/appointments', (req: Request, res: Response) => {
     try {
         const appointmentData: CreateAppointmentRequest= req.body;
@@ -33,7 +32,6 @@ router.get('/clinicians/:id/appointments',  (req: Request, res: Response) => {
     const clinicianId = req.params.id;
     const role = req.headers['x-role'] as string;
     const queryParams: AppointmentQueryParams = req.query;
-    
     if (!role || !['clinician', 'admin'].includes(role)) {
     return res.status(403).json({ error: 'Forbidden: Clinician or Admin role required' });
   }

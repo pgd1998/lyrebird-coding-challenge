@@ -23,20 +23,22 @@ describe('GET /appointments - Integration Tests', () => {
       const futureEnd2 = new Date(Date.now() + 33 * 60 * 60 * 1000).toISOString(); // 33 hours from now
 
       // Create appointment for clinician 1
-      await createTestAppointment({
+      const response1 = await createTestAppointment({
         clinicianId: `admin-test-clinician-1-${uniqueId}`,
         patientId: `admin-test-patient-1-${uniqueId}`,
         start: futureStart1,
         end: futureEnd1
       });
+      expect(response1.status).toBe(201);
 
       // Create appointment for clinician 2
-      await createTestAppointment({
+      const response2 = await createTestAppointment({
         clinicianId: `admin-test-clinician-2-${uniqueId}`,
         patientId: `admin-test-patient-2-${uniqueId}`,
         start: futureStart2,
         end: futureEnd2
       });
+      expect(response2.status).toBe(201);
 
       // Admin should see ALL appointments
       const response = await request(app)
