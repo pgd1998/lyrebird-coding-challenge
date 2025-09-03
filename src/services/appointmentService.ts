@@ -42,7 +42,7 @@ export const createAppointment = (data: CreateAppointmentRequest): Appointment =
       AND end_time > ?
     `).get(clinicianId, end, start);
     
-    // D: why are we throwing error here. should we return 409 here?
+    
     if (overlapping) {
       throw new Error('APPOINTMENT_CONFLICT');
     }
@@ -99,12 +99,12 @@ export const getClinicianAppointments = (clinicianId: string, params: Appointmen
 
   // Add date range filtering if provided (appointments that intersect with the range)
   if (params.from) {
-    query += ` AND end_time >= ?`;  // appointment ends after range starts
+    query += ` AND end_time >= ?`;  
     queryParams.push(params.from);
   }
   
   if (params.to) {
-    query += ` AND start_time <= ?`;  // appointment starts before range ends
+    query += ` AND start_time <= ?`;  
     queryParams.push(params.to);
   }
 
@@ -135,12 +135,12 @@ export const getAllAppointments = (params: AppointmentQueryParams = {}): Appoint
   
   // Add date range filtering if provided (appointments that intersect with the range)
   if (params.from) {
-    query += ` AND end_time >= ?`;  // appointment ends after range starts
+    query += ` AND end_time >= ?`;  
     queryParams.push(params.from);
   }
   
   if (params.to) {
-    query += ` AND start_time <= ?`;  // appointment starts before range ends
+    query += ` AND start_time <= ?`;  
     queryParams.push(params.to);
   }
   

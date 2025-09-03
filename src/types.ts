@@ -1,4 +1,3 @@
-// Core entity types
 export interface Clinician {
   id: string;
   name: string;
@@ -18,8 +17,8 @@ export interface Appointment {
   id: number;
   clinicianId: string;
   patientId: string;
-  startTime: string; // ISO datetime
-  endTime: string;   // ISO datetime
+  startTime: string;
+  endTime: string;   
   createdAt: string;
 }
 
@@ -27,12 +26,12 @@ export interface Appointment {
 export interface CreateAppointmentRequest {
   clinicianId: string;
   patientId: string;
-  start: string; // ISO datetime
-  end: string;   // ISO datetime
+  start: string;
+  end: string;
 }
 
 // Query parameter types
 export interface AppointmentQueryParams {
-  from?: string; // ISO datetime
-  to?: string;   // ISO datetime
+  from?: string;
+  to?: string;
 }
