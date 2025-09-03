@@ -1,0 +1,47 @@
+import 'dotenv/config';
+import express, { Express } from 'express';
+import cors from 'cors';
+import path from 'path';
+import { getDatabase } from './database.js';
+import appointmentRoutes from './controllers/appointmentController.js';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+const db = getDatabase();
+
+app.use(cors());
+app.use(express.json());
+
+
+app.use('/api-docs', express.static(path.resolve(process.cwd(), 'docs')));
+
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    database: 'connected'
+  });
+});
+
+app.use('/', appointmentRoutes);
+
+
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Clinic API running on http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Swagger UI: http://localhost:${PORT}/api-docs`);
+  }).on('error', (err) => {
+    console.error('Server error:', err);
+  });
+}
+
+// Keep the process alive
+process.on('SIGINT', () => {
+  console.log('Shutting down gracefully...');
+  process.exit(0);
+});
+
+export default app;

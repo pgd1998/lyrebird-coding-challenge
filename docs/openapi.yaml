@@ -1,0 +1,360 @@
+openapi: 3.0.0
+info:
+  title: Clinic Appointment API
+  description: |
+    A comprehensive API for managing clinic appointments with role-based access control.
+    
+    ## Features
+    - Create appointments with automatic clinician/patient creation
+    - Role-based authentication (patient, clinician, admin)
+    - Overlap detection and conflict prevention
+    - Date range filtering for appointment queries
+    - UTC timezone consistency throughout
+    
+    ## Authentication
+    All endpoints require an `x-role` header with one of the following values:
+    - `patient`: Can create appointments
+    - `clinician`: Can view their own appointments
+    - `admin`: Full access to all endpoints and data
+  version: 1.0.0
+  contact:
+    name: Clinic API Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: http://localhost:3001
+    description: Alternative development server
+
+tags:
+  - name: Appointments
+    description: Operations related to appointment management
+  - name: Clinicians
+    description: Operations related to clinician data and their appointments
+
+components:
+  securitySchemes:
+    roleHeader:
+      type: apiKey
+      in: header
+      name: x-role
+      description: Role-based access control header
+
+  schemas:
+    CreateAppointmentRequest:
+      type: object
+      required:
+        - clinicianId
+        - patientId
+        - start
+        - end
+      properties:
+        clinicianId:
+          type: string
+          description: Unique identifier for the clinician
+          example: "dr-smith-123"
+        patientId:
+          type: string
+          description: Unique identifier for the patient
+          example: "patient-456"
+        start:
+          type: string
+          format: date-time
+          description: Appointment start time in ISO 8601 format (UTC)
+          example: "2025-12-01T09:00:00Z"
+        end:
+          type: string
+          format: date-time
+          description: Appointment end time in ISO 8601 format (UTC)
+          example: "2025-12-01T10:00:00Z"
+
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique appointment ID
+          example: 1
+        clinicianId:
+          type: string
+          description: Unique identifier for the clinician
+          example: "dr-smith-123"
+        patientId:
+          type: string
+          description: Unique identifier for the patient
+          example: "patient-456"
+        startTime:
+          type: string
+          format: date-time
+          description: Appointment start time in ISO 8601 format (UTC)
+          example: "2025-12-01T09:00:00Z"
+        endTime:
+          type: string
+          format: date-time
+          description: Appointment end time in ISO 8601 format (UTC)
+          example: "2025-12-01T10:00:00Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when appointment was created
+          example: "2025-09-03T10:30:00Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Missing required fields"
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-09-03T10:30:00Z"
+        database:
+          type: string
+          example: "connected"
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the current health status of the API and database connection
+      tags: [System]
+      responses:
+        200:
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  /appointments:
+    post:
+      summary: Create a new appointment
+      description: |
+        Creates a new appointment with automatic clinician and patient creation if they don't exist.
+        
+        **Features:**
+        - Automatically creates clinician and patient records if they don't exist
+        - Validates appointment times are in the future
+        - Prevents overlapping appointments for the same clinician
+        - Requires patient or admin role
+      tags: [Appointments]
+      security:
+        - roleHeader: []
+      parameters:
+        - in: header
+          name: x-role
+          required: true
+          schema:
+            type: string
+            enum: [patient, admin]
+          description: User role (patient or admin required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentRequest'
+            examples:
+              basic_appointment:
+                summary: Basic appointment creation
+                value:
+                  clinicianId: "dr-smith-123"
+                  patientId: "patient-456"
+                  start: "2025-12-01T09:00:00Z"
+                  end: "2025-12-01T10:00:00Z"
+      responses:
+        201:
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        400:
+          description: Bad request - missing required fields or invalid data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  summary: Missing required fields
+                  value:
+                    error: "Missing required fields"
+                invalid_date:
+                  summary: Invalid date format
+                  value:
+                    error: "Invalid date format"
+        403:
+          description: Forbidden - invalid role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Forbidden: Patient or Admin role required"
+        409:
+          description: Conflict - appointment time conflicts with existing booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Appointment time conflicts with existing booking"
+
+    get:
+      summary: Get all appointments (admin only)
+      description: |
+        Retrieves all appointments across all clinicians with optional date range filtering.
+        
+        **Access:** Admin role required
+        
+        **Features:**
+        - View all appointments system-wide
+        - Optional date range filtering
+        - Returns appointments sorted by start time
+      tags: [Appointments]
+      security:
+        - roleHeader: []
+      parameters:
+        - in: header
+          name: x-role
+          required: true
+          schema:
+            type: string
+            enum: [admin]
+          description: User role (admin required)
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+          description: Start date for filtering (ISO 8601 format UTC)
+          example: "2025-12-01T00:00:00Z"
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+          description: End date for filtering (ISO 8601 format UTC)
+          example: "2025-12-31T23:59:59Z"
+      responses:
+        200:
+          description: List of all appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        400:
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden - admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Forbidden: Admin role required"
+
+  /clinicians/{id}/appointments:
+    get:
+      summary: Get appointments for a specific clinician
+      description: |
+        Retrieves all appointments for a specific clinician with optional date range filtering.
+        
+        **Access:** Clinician or Admin role required
+        
+        **Features:**
+        - View appointments for a specific clinician
+        - Optional date range filtering
+        - Returns appointments sorted by start time
+      tags: [Clinicians]
+      security:
+        - roleHeader: []
+      parameters:
+        - in: header
+          name: x-role
+          required: true
+          schema:
+            type: string
+            enum: [clinician, admin]
+          description: User role (clinician or admin required)
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Unique identifier for the clinician
+          example: "dr-smith-123"
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+          description: Start date for filtering (ISO 8601 format UTC)
+          example: "2025-12-01T00:00:00Z"
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+          description: End date for filtering (ISO 8601 format UTC)
+          example: "2025-12-31T23:59:59Z"
+      responses:
+        200:
+          description: List of appointments for the clinician
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+              examples:
+                clinician_appointments:
+                  summary: Example clinician appointments
+                  value:
+                    - id: 1
+                      clinicianId: "dr-smith-123"
+                      patientId: "patient-456"
+                      startTime: "2025-12-01T09:00:00Z"
+                      endTime: "2025-12-01T10:00:00Z"
+                      createdAt: "2025-09-03T10:30:00Z"
+                    - id: 2
+                      clinicianId: "dr-smith-123"
+                      patientId: "patient-789"
+                      startTime: "2025-12-01T11:00:00Z"
+                      endTime: "2025-12-01T12:00:00Z"
+                      createdAt: "2025-09-03T10:35:00Z"
+                empty_results:
+                  summary: No appointments found
+                  value: []
+        400:
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden - invalid role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Forbidden: Clinician or Admin role required"
