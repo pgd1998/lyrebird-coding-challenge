@@ -26,7 +26,7 @@ This system implements a clean, layered architecture:
 - **Interactive Documentation**: Professional Redoc-generated API docs
 - **OpenAPI 3.0 Specification**: Comprehensive API documentation in YAML format
 - **Auto-Generated**: Static HTML documentation with embedded styling
-- **Accessible at**: `http://localhost:3000/api-docs`
+- **Accessible at**: `https://pgd1998.github.io/lyrebird-coding-challenge/`
 
 ### Data Validation
 - **ISO 8601 Format**: Strict datetime validation with UTC timezone requirement
@@ -203,7 +203,7 @@ npm run test:coverage
 ## 📖 API Documentation
 
 ### Accessing Documentation
-Visit `http://localhost:3000/api-docs` when the server is running to view the interactive API documentation.
+Visit `http://localhost:3000/api-docs` when the server is running or check the deployed link at `https://pgd1998.github.io/lyrebird-coding-challenge/`to view the interactive API documentation.
 
 ### Documentation Features
 - **Professional Styling**: Clean, readable Redoc interface
