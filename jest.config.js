@@ -9,5 +9,6 @@ export default {
     '^.+\\.tsx?$': ['ts-jest', {
       useESM: true
     }]
-  }
+  },
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js']
 };

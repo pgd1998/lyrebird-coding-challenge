@@ -22,22 +22,22 @@ describe('GET /appointments - Integration Tests', () => {
       const futureStart2 = new Date(Date.now() + 32 * 60 * 60 * 1000).toISOString(); // 32 hours from now
       const futureEnd2 = new Date(Date.now() + 33 * 60 * 60 * 1000).toISOString(); // 33 hours from now
 
-      // Create appointment for clinician 1
+      // Create appointment for clinician 1 with admin role
       const response1 = await createTestAppointment({
         clinicianId: `admin-test-clinician-1-${uniqueId}`,
         patientId: `admin-test-patient-1-${uniqueId}`,
         start: futureStart1,
         end: futureEnd1
-      });
+      }, 'admin');
       expect(response1.status).toBe(201);
 
-      // Create appointment for clinician 2
+      // Create appointment for clinician 2 with admin role
       const response2 = await createTestAppointment({
         clinicianId: `admin-test-clinician-2-${uniqueId}`,
         patientId: `admin-test-patient-2-${uniqueId}`,
         start: futureStart2,
         end: futureEnd2
-      });
+      }, 'admin');
       expect(response2.status).toBe(201);
 
       // Admin should see ALL appointments
@@ -120,14 +120,14 @@ describe('GET /appointments - Integration Tests', () => {
         patientId: `filter-test-patient-1-${uniqueId}`,
         start: dec1Start,
         end: dec1End
-      });
+      }, 'admin');
 
       await createTestAppointment({
         clinicianId: `filter-test-clinician-2-${uniqueId}`,
         patientId: `filter-test-patient-2-${uniqueId}`, 
         start: dec2Start,
         end: dec2End
-      });
+      }, 'admin');
 
       // Filter to only Dec 1st appointments
       const response = await request(app)

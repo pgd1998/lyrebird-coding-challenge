@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { Express } from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -29,13 +30,16 @@ app.get('/health', (req, res) => {
 app.use('/', appointmentRoutes);
 
 
-app.listen(PORT, () => {
-  console.log(`Clinic API running on http://localhost:${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`Swagger UI: http://localhost:${PORT}/api-docs`);
-}).on('error', (err) => {
-  console.error('Server error:', err);
-});
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Clinic API running on http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Swagger UI: http://localhost:${PORT}/api-docs`);
+  }).on('error', (err) => {
+    console.error('Server error:', err);
+  });
+}
 
 // Keep the process alive
 process.on('SIGINT', () => {
