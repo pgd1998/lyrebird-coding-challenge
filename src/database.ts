@@ -1,8 +1,8 @@
 import Database from 'better-sqlite3';
 
-// D: Why  Database.Database? what does it mean? i think it is TS related
+
 export const initializeDatabase = (): Database.Database =>{
-    const db = new Database('clinic.db'); // Use ':memory:' for in-memory
+    const db = new Database('clinic.db'); 
 
     db.exec (`
         CREATE TABLE IF NOT EXISTS clinicians (
@@ -38,7 +38,7 @@ export const initializeDatabase = (): Database.Database =>{
   return db;
 }
 
-// D: Singleton database instance
+
 let dbInstance: Database.Database;
 
 export const getDatabase = (): Database.Database => {

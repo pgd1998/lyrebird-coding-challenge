@@ -3,31 +3,29 @@ import { CreateAppointmentRequest,  AppointmentQueryParams, Appointment} from ".
 
 const db = getDatabase();
 
-// D: How is the database here comply ACID principle?
 
-// D: understand the TS structure here
 export const createAppointment = (data: CreateAppointmentRequest): Appointment => { 
     const { clinicianId, patientId, start, end } = data;
     const startDate = new Date(start);
     const endDate = new Date(end);
 
-    // Check if dates are valid and in correct ISO format
+    
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
         throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
     }
 
-    // Validate that the input strings are in proper UTC format (end with Z)
+    
     if (!start.endsWith('Z') || !end.endsWith('Z')) {
         throw new Error('Invalid date format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)');
     }
 
-    // Check if appointment is in the past (using UTC)
+    
     const now = new Date();
     if (startDate <= now) {
         throw new Error('Cannot book appointments in the past');
     }
 
-    // Validate start < end
+    
     if (startDate >= endDate) { 
         throw new Error('Start time must be before end time');
     }
@@ -81,7 +79,7 @@ export const createAppointment = (data: CreateAppointmentRequest): Appointment =
         return result;
 }
 
-//  D: why this AppointmentQueryParams = {} specifically ={} ?
+
 export const getClinicianAppointments = (clinicianId: string, params: AppointmentQueryParams = {}): Appointment[] => {
     let query = `
     SELECT 
