@@ -17,10 +17,16 @@ describe('GET /appointments - Integration Tests', () => {
       const uniqueId = Date.now();
       
       // Create appointments for different clinicians
-      const futureStart1 = new Date(Date.now() + 30 * 60 * 60 * 1000).toISOString(); // 30 hours from now
-      const futureEnd1 = new Date(Date.now() + 31 * 60 * 60 * 1000).toISOString(); // 31 hours from now
-      const futureStart2 = new Date(Date.now() + 32 * 60 * 60 * 1000).toISOString(); // 32 hours from now
-      const futureEnd2 = new Date(Date.now() + 33 * 60 * 60 * 1000).toISOString(); // 33 hours from now
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(9, 0, 0, 0);
+      
+      const futureStart1 = tomorrow.toISOString();
+      const futureEnd1 = new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString(); // 1 hour later
+      
+      tomorrow.setHours(11, 0, 0, 0);
+      const futureStart2 = tomorrow.toISOString();
+      const futureEnd2 = new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString(); // 1 hour later
 
       // Create appointment for clinician 1 with admin role
       const response1 = await createTestAppointment({
